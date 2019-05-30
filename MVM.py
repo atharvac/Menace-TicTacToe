@@ -33,7 +33,7 @@ class GUI3:
             self.Menace_obj_list2 = {}
             print("Cannot find o")
 
-        kz = input()
+        kz = input("Press enter to continue")
 
         self.mv = 1
         self.board = tk.Tk()
