@@ -4,15 +4,31 @@ import tkinter as tk
 from tkinter import font
 import pprint
 from collections import Counter
+from tqdm import tqdm
+import sys
+
 
 Xrflag = False    #Turns Player number 1 to a random player
 Orflag = False    #Turns Player number 2 to a random player
-NumOfGames = 50000   #Define the Number of games to be played
-MaxProbab = 70    #Higher number means higher persistance of moves
+NumOfGames = 10000
+
+try:
+    if sys.argv[2] == '1':
+        Xrflag = True    #Turns Player number 1 to a random player
+    if sys.argv[3] == '1':
+        Orflag = True    #Turns Player number 2 to a random player
+    NumOfGames = int(sys.argv[1])
+except:
+    pass
+MaxProbab = 30    #Higher number means higher persistance of moves
 Drawprobab = 30   #0 indicates no reward for draws
 
 class GUI3:
     def __init__(self):
+        self.p1_wins = 0
+        self.p2_wins = 0
+        self.draws = 0
+
         self.move_no = 1
         self.rescall=0
         self.obj_names = []
@@ -33,8 +49,6 @@ class GUI3:
             self.Menace_obj_list2 = {}
             print("Cannot find o")
 
-        kz = input("Press enter to continue")
-
         self.mv = 1
         self.board = tk.Tk()
         self.board.title("Tic-Tac-Toe")
@@ -51,8 +65,7 @@ class GUI3:
         self.b1 = tk.Button(self.board, height=1, width=6, text='Exit', font=self.font1)
         self.b1.config(command=lambda: self.Destroy())
         self.b1.grid(row=3, column=0)
-        self.Runprog()
-        self.board.mainloop()
+
 
     def Invalid_Moves(self):
         invalid_m = []
@@ -111,7 +124,8 @@ class GUI3:
 
     def Runprog(self):
         global NumOfGames
-        while self.rescall<NumOfGames:
+        #while self.rescall<NumOfGames:
+        for x in tqdm(range(NumOfGames)):
             listX = []
             listO = []
             listAll = []
@@ -168,7 +182,7 @@ class GUI3:
             y.loss()
         self.Temp_obj_list2 = []
         self.Temp_obj_list1 = []
-        print("P1 Win call")
+        self.p1_wins += 1
         self.mv = 3
         self.reset()
         #self.board.after(1000, lambda: self.reset())
@@ -182,7 +196,7 @@ class GUI3:
             y.draw()
         self.Temp_obj_list2 = []
         self.Temp_obj_list1 = []
-        print("Draw call")
+        self.draws += 1
         self.mv = 3
         self.reset()
         #self.board.after(1000, lambda: self.reset())
@@ -196,7 +210,7 @@ class GUI3:
             y.win()
         self.Temp_obj_list2 = []
         self.Temp_obj_list1 = []
-        print("P1 Loss call")
+        self.p2_wins += 1
         self.mv = 3
         self.reset()
         #self.board.after(1000, lambda: self.reset())
@@ -239,7 +253,6 @@ class GUI3:
         if Orflag != True:
             with open('dictO.pkl', 'wb') as file1:
                 pickle.dump(self.Menace_obj_list2, file1)
-        self.board.destroy()
 
 
 class MENACE1:
@@ -292,11 +305,10 @@ class MENACE1:
                 model = [0,1,2,3,4,5,6,7,8]
                 if self.mv < 8:
                     k = [x for x in model if x not in self.prob]
-                    print("Random Invoked")
                     self.buffer = random.choice(k)
                     return self.buffer
                 return -1
-        
+
 
     def loss(self):
         try:
@@ -351,11 +363,11 @@ class MENACE2:
     def r_select(self):
         global Orflag
         if Orflag == True:
-            
+
             C = [0,1,2,3,4,5,6,7,8]
             k = [x for x in C if x not in self.prob]
             return random.choice(k)
-        else:        
+        else:
             try:
                 new_cell = random.choice(self.probab)
                 self.buffer = new_cell
@@ -364,11 +376,10 @@ class MENACE2:
                 model = [0,1,2,3,4,5,6,7,8]
                 if self.mv < 8:
                     k = [x for x in model if x not in self.prob]
-                    print("Random Invoked")
                     self.buffer = random.choice(k)
                     return self.buffer
                 return -1
-            
+
 
     def loss(self):
         try:
@@ -396,3 +407,9 @@ class MENACE2:
 
 # pprint.pprint(Menace_obj_list1, stream=None, indent=3, width=80, depth=None)
 W = GUI3()
+W.Runprog()
+W.Destroy()
+print("Statistics", "--------------------------------------------------")
+print("Player 1 Wins:", W.p1_wins)
+print("Player 2 Wins:", W.p2_wins)
+print("Draws:", W.draws)
